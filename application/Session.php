@@ -43,7 +43,7 @@ class Session {
     public $villages = array();
     public $right;
 
-    function __construct() {
+    public function __construct() {
         global $database;
         session_start();
         
@@ -306,7 +306,8 @@ class Session {
 
         }
     }
-    function updateHero() {
+
+    public function updateHero() {
         global $database,$hero_levels;
         //накидыinаем герою здороinье и уроinни
         $timeisrunningout=time()-$this->heroD['lastupdate'];
