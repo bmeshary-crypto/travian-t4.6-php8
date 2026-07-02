@@ -3,7 +3,7 @@ ini_set('default_charset', 'UTF-8');
 
 class MYSQL_DB extends DB {
 
-    function modifyFieldLevel($wid, $field, $level, $mode){
+    public function modifyFieldLevel($wid, $field, $level, $mode){
 
         $b = 'f' . $field;
 
@@ -13,290 +13,160 @@ class MYSQL_DB extends DB {
 
     }
 
-
-
-    function modifyFieldType($wid, $field, $type)
-
+    public function modifyFieldType($wid, $field, $type)
     {
-
         $b = 'f' . $field . 't';
-
         return $this->query("UPDATE fdata SET $b=$type WHERE vref=" . $wid);
-
     }
 
-function getGlobalMedal($email) {
-
+    public function getGlobalMedal($email) {
         $p=array('U'=>$email);
-
-		$q = "SELECT * FROM `".DBSERVIDORES."`.`medalhas` where email = :U order by id desc";
-
-		return $this->query($q,$p);
-
-
-
+        $q = "SELECT * FROM `".DBSERVIDORES."`.`medalhas` where email = :U order by id desc";
+        return $this->query($q,$p);
     }
 
-function insertGlobalMedal($medalname, $descricao, $tempo, $imagem, $email) {
-
-
-
+    public function insertGlobalMedal($medalname, $descricao, $tempo, $imagem, $email) {
         $p=array('mail'=> $email, 'nome'=>$medalname, 'desc'=>$descricao,'img'=>$imagem);
-
         $q = "INSERT INTO `".DBSERVIDORES."`.`medalhas` (`id`, `email`, `nome`, `descricao`, `imagem`, `categorie`) VALUES (NULL, :mail , :nome , :desc , :img , '20')";
-
-		$this->query($q,$p);
-
-
-
+        $this->query($q,$p);
     }
 
 //INSERT INTO `medalhas` (`id`, `email`, `nome`, `descricao`, `imagem`, `categorie`) VALUES (NULL, 'danilolifecoach@gmail.com', 'Medalha VIP', 'Jogador ajudou o servidor comprando Ouro', 'tvip', '20');
 
-    function vernoticias(){
-
-	$q = "SELECT * from news ORDER BY id";
-
-	return $this->query($q);
-
-
-
-	}
-
-    function ADDnotificacao($uid,$tipo,$mensagem){
-
-global $session;
-
-     $time = time();
-
-    switch($tipo){
-
-       
-
-        case 1 : $tempo = ($time+ 10);$gold=30;
-
-        break;
-
-        case 2 : $tempo = ($time + 30);$gold=60;
-
-        break;
-
-        case 3 : $tempo = ($time + 60);$gold=100;
-
-        break;
-
+    public function vernoticias(){
+        $q = "SELECT * from news ORDER BY id";
+        return $this->query($q);
     }
 
-    $mensagem = utf8_encode($mensagem);
+    public function ADDnotificacao($uid,$tipo,$mensagem){
+        global $session;
+        $time = time();
 
-    $this->modifyGold($uid, $gold, 0);
+        switch($tipo){
+            case 1 : $tempo = ($time+ 10);$gold=30;
+                break;
+            case 2 : $tempo = ($time + 30);$gold=60;
+                break;
+            case 3 : $tempo = ($time + 60);$gold=100;
+                break;
+        }
 
-    
+        $mensagem = utf8_encode($mensagem);
+        $this->modifyGold($uid, $gold, 0);
 
-    $p=array('autor'=> $uid, 'tempo'=>$tempo, 'servidor'=> SERVER_NAME,'tipo'=>$tipo,'user'=>$session->username);
-
-	$q = "INSERT INTO `".DBSERVIDORES."`.`notificacao` (`id`, `autor`, `tempo`, `tipo`, `mensagem`, `servidor`,`username`) VALUES (NULL, :autor, :tempo, :tipo, '$mensagem' , :servidor, :user)";
-
-	$this->query($q,$p);
-
-  }
-
-    
-
-    function lenotificacoes(){
-
-   	    $p=array('id'=> $id);
-
-	    //$q = "SELECT * FROM `".DBSERVIDORES."`.notificacao WHERE `id` = :id";
-
-        $q = "SELECT * FROM `".DBSERVIDORES."`.notificacao ORDER BY tempo ASC ";
-
-		$answer = $this->query($q);
-
-        return $answer;
-
-    }  
-
-    
-
-    
-
-    function hasHourseById($id, $uid) {
-
-		$p=array('I'=> $id, 'U' => $uid);
-
-		$q = "SELECT * FROM heroitems WHERE type = :I and uid = :U";
-
-		$answer = $this->query($q,$p);
-
-		if($answer) {
-
-		    return true;
-
-		}
-
-		else {
-
-		    return false;
-
-		}
-
+        $p=array('autor'=> $uid, 'tempo'=>$tempo, 'servidor'=> SERVER_NAME,'tipo'=>$tipo,'user'=>isset($session->username) ? $session->username : '');
+        $q = "INSERT INTO `".DBSERVIDORES."`.`notificacao` (`id`, `autor`, `tempo`, `tipo`, `mensagem`, `servidor`,`username`) VALUES (NULL, :autor, :tempo, :tipo, '$mensagem' , :servidor, :user)";
+        $this->query($q,$p);
     }
 
-	
+    
 
-	function checkAccountStatus($id) {
+    public function lenotificacoes(){
+       $p=array('id'=> isset($id) ? $id : 0);
+       //$q = "SELECT * FROM `".DBSERVIDORES."`.notificacao WHERE `id` = :id";
+       $q = "SELECT * FROM `".DBSERVIDORES."`.notificacao ORDER BY tempo ASC ";
+       $answer = $this->query($q);
+       return $answer;
+    }
 
-		/*
+    public function hasHourseById($id, $uid) {
+       $p=array('I'=> $id, 'U' => $uid);
+       $q = "SELECT * FROM heroitems WHERE type = :I and uid = :U";
+       $answer = $this->query($q,$p);
+       if($answer) {
+           return true;
+       } else {
+           return false;
+       }
+    }
 
-		$p=array('I'=> $id);
+    public function checkAccountStatus($id) {
+       /*
+       $p=array('I'=> $id);
+       $q = "SELECT * FROM users WHERE id = :I and protect = 0 and type = 0";
+       $answer = $this->query($q,$p);
+       if($answer) {
+           return true;
+       } else {
+           return false;
+       }
+       */
+       return false;
+    }
 
-		$q = "SELECT * FROM users WHERE id = :I and protect = 0 and type = 0";
+    public function setAccountType($id, $type) {
+       if($type == 1) {
+           $this->query("UPDATE users set gold=gold-750 WHERE id  = '".$id."'");
+       }
+       $p=array('I'=> $id, 'T'=> $type);
+       $q = "UPDATE users set type = :T WHERE id = :I";
+       $this->query($q,$p);
+    }
 
-		$answer = $this->query($q,$p);
+    public function setAccountStatus() {
+    }
 
-		if($answer) {
-
-			return true;
-
-		}
-
-		else {
-
-		    return false;
-
-		}
-
-	*/
-
-		return false;
-
-	}
-
-	
-
-	function setAccountType($id, $type) {
-
-		if($type == 1) {
-
-			$this->query("UPDATE users set gold=gold-750 WHERE id  = '".$id."'");
-
-		}
-
-		$p=array('I'=> $id, 'T'=> $type);
-
-		$q = "UPDATE users set type = :T WHERE id = :I";
-
-		$this->query($q,$p);
-
-	}
-
-	
-
-	function setAccountStatus() {
-
-		
-	}
-
-	
-
-	 function fastTraining($uid,$vref) {
-		$this->query("UPDATE  users set gold=gold-".FINISH_ALL_COST." WHERE id  = '".$uid."'");
-		
-        $time = time() + 3600;
-		$this->setCorrectTimestamp($vref);
-
+    public function fastTraining($uid,$vref) {
+       $this->query("UPDATE  users set gold=gold-".FINISH_ALL_COST." WHERE id  = '".$uid."'");
+       $time = time() + 3600;
+       $this->setCorrectTimestamp($vref);
     }
 
 	
 
 	
 
-	//inоооот..by Brainiac короче
+    public function FilterIntValue($value)
+    {
+        $returnValue = null;
+        if(!$value)$returnValue = null;
+        if(is_numeric($value))
+        {
+            $returnValue = intval($value);
+        }
+        else
+        {
+            $returnValue = null;
+        }
+        return $returnValue;
+    }
 
+    public function filterVar($value){
+        $number=filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+        return $number;
+    }
 
+    public function FilterFloatValue($value)
+    {
+        $returnValue = null;
+        if(!$value)$returnValue = null;
+        if(is_numeric($value))
+        {
+            $returnValue = floatval($value);
+        }
+        else
+        {
+            $returnValue = null;
+        }
+        return $returnValue;
+    }
 
-	function FilterIntValue($value)
+    public function FilterStringValue($value)
+    {
+        $returnValue = null;
+        if(!$value)$returnValue = null;
+        $value = substr($value, 0, 40);
+        $returnValue = htmlspecialchars($value);
+        return $returnValue;
+    }
 
-	{
-
-		$returnValue = null;
-
-		if(!$value)$returnValue = null;
-
-		if(is_numeric($value))
-
-		{
-
-			$returnValue = intval($value);
-
-		}
-
-		else
-
-		{
-
-			$returnValue = null;
-
-		}
-
-		return $returnValue;
-
-	}
-
-
-
-function filterVar($value){
-
-	$number=filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-
-	return $number;
-
-	}
-
-
-
-
-
-	function FilterFloatValue($value)
-
-	{
-
-		$returnValue = null;
-
-		if(!$value)$returnValue = null;
-
-		if(is_numeric($value))
-
-		{
-
-			$returnValue = floatval($value);
-
-		}
-
-		else
-
-		{
-
-			$returnValue = null;
-
-		}
-
-		return $returnValue;
-
-	}
-
-
-
-	function FilterStringValue($value)
-
-	{
-
-		$returnValue = null;
-
-		if(!$value)$returnValue = null;
-
-		$value = substr($value, 0, 40);
+    public function FilterTextValue($value)
+    {
+        $returnValue = null;
+        if(!$value)$returnValue = null;
+        $returnValue = htmlspecialchars($value);
+        return $returnValue;
+    }
 
 		$returnValue = htmlspecialchars($value);
 
@@ -326,232 +196,107 @@ function filterVar($value){
 
 
 
-	function checkExist($ref, $mode) {
-
-
-
-		if(!$mode) {
-
-			$q = "SELECT username FROM users where username = :ref";
-
-		} else {
-
-			$q = "SELECT email FROM users where email = :ref";
-
-		}
-
-		$p=array('ref'=>$ref);
-
-		$result =  $this->query($q,$p);
-
-		if($result) {
-
-			return true;
-
-		} else {
-
-			return false;
-
-		}
-
-	}
-
-
-
-
-
-	function updateUserField($ref, $field, $value, $switch=1) {
-
-
-		if(!$switch) {
-
-			$q = "UPDATE users set ".$field." = :val where username = :ref";
-
-		} else {
-
-			$q = "UPDATE users set ".$field." = :val where id = :ref";
-
-		}
-
-        		$p=array('val'=>$value,'ref'=>$ref);
-
-		$this->query($q,$p);
-
-
-
-
-
-
-
-	}
-
-
-
-       	function KillProtect($uid) {
-
-
-
-        $q = "UPDATE users set `protect` = '0' where id = :uid";
-
-        $p=array('uid'=>$uid);
-
-	    $this->query($q,$p);
-
-		}
-
-
-
-	function getSitee($uid) {
-
-
-
-		$q = "SELECT id,username from users where sit1 = :uid1 or sit2 = :uid2";
-
-		$p=array('uid1'=>$uid,'uid2'=>$uid);
-
-		$dbarray=$this->query($q,$p);
-
-	    return $dbarray;
-
-	}
-
-
-
-
-
-
-
-
-
-	function removeMeSit($uid, $uid2) {
-
-
-
-		$q = "UPDATE users set `sit1` = 0 where id = :uid1 and sit1 = :uid2";
-
-		$p=array('uid1'=>$uid,'uid2'=>$uid2);
-
-	    $this->query($q,$p);
-
-	    $q = "UPDATE users set `sit2` = 0 where id = :uid1 and sit2 = :uid2";
-
-	    		$p=array('uid1'=>$uid,'uid2'=>$uid2);
-
-	    $this->query($q,$p);
-
+    public function checkExist($ref, $mode) {
+       if(!$mode) {
+           $q = "SELECT username FROM users where username = :ref";
+       } else {
+           $q = "SELECT email FROM users where email = :ref";
+       }
+       $p=array('ref'=>$ref);
+       $result = $this->query($q,$p);
+       if($result) {
+           return true;
+       } else {
+           return false;
+       }
+    }
+
+    public function updateUserField($ref, $field, $value, $switch=1) {
+       if(!$switch) {
+           $q = "UPDATE users set ".$field." = :val where username = :ref";
+       } else {
+           $q = "UPDATE users set ".$field." = :val where id = :ref";
+       }
+       $p=array('val'=>$value,'ref'=>$ref);
+       $this->query($q,$p);
+    }
+
+    public function KillProtect($uid) {
+       $q = "UPDATE users set `protect` = '0' where id = :uid";
+       $p=array('uid'=>$uid);
+       $this->query($q,$p);
+    }
+
+    public function getSitee($uid) {
+       $q = "SELECT id,username from users where sit1 = :uid1 or sit2 = :uid2";
+       $p=array('uid1'=>$uid,'uid2'=>$uid);
+       $dbarray=$this->query($q,$p);
+       return $dbarray;
+    }
+
+    public function removeMeSit($uid, $uid2) {
+       $q = "UPDATE users set `sit1` = 0 where id = :uid1 and sit1 = :uid2";
+       $p=array('uid1'=>$uid,'uid2'=>$uid2);
+       $this->query($q,$p);
+       $q = "UPDATE users set `sit2` = 0 where id = :uid1 and sit2 = :uid2";
+       $p=array('uid1'=>$uid,'uid2'=>$uid2);
+       $this->query($q,$p);
     }
 
 
 
-    function getUserField($ref, $field, $mode)
+ public function getUserField($ref, $field, $mode)
+ {
+     if (!$mode) {
+         $q = "SELECT " . $field . " FROM users where id = :ref";
+     } else {
+         $q = "SELECT " . $field . " FROM users where username = :ref";
+     }
+     $p = array('ref' => $ref);
+     $dbarray = $this->row($q, $p);
+     return isset($dbarray[$field]) ? $dbarray[$field] : null;
+ }
 
-    {
+ public function getQuestUid($ref)
+ {
+     $q = "SELECT id,quest FROM users where username = :ref";
+     $p = array('ref' => $ref);
+     return $this->row($q,$p);
+ }
 
+ public function getUserInfoByVillageID($vid)
+ {
+     $q = "SELECT u.id, u.tribe, u.alliance,u.cp,u.username,u.protect,u.regtime,v.name as vname FROM users as u  LEFT JOIN vdata as v ON (v.wref = :V) WHERE u.id = v.owner";
+     $p = array('V' => $vid);
+     return $this->row($q,$p);
+ }
 
+ public function getUserVillInfoByVillageID($vid)
+ {
+     $q = "SELECT users.id, users.tribe,village.name,users.username,village.vx,village.vy,village.owner FROM users users LEFT JOIN vdata village ON (village.wref = :V) WHERE users.id = village.owner";
+     $p = array('V' => $vid);
+     return $this->row($q,$p);
+ }
 
-        if (!$mode) {
+ public function getEvasion($vid)
+ {
+     $q = "SELECT u.evasion,u.goldclub,v.capital,u.id FROM (
+     vdata as v
+     LEFT JOIN users as u ON u.id = v.owner)
+     WHERE v.wref = :vID";
+     $p= array('vID'=> $vid);
+     return $this->row($q,$p);
+ }
 
-            $q = "SELECT " . $field . " FROM users where id = :ref";
-
-        } else {
-
-            $q = "SELECT " . $field . " FROM users where username = :ref";
-
-        }
-
-        $p = array('ref' => $ref);
-
-        $dbarray = $this->row($q, $p);
-
-        return $dbarray[$field];
-
-    }
-
-    function getQuestUid($ref)
-
-    {
-
-        $q = "SELECT id,quest FROM users where username = :ref";
-
-        $p = array('ref' => $ref);
-
-        return $this->row($q,$p);
-
-    }
-
-
-
-
-
-
-
- function getUserInfoByVillageID($vid)
-
-    {
-
-
-
-        $q = "SELECT u.id, u.tribe, u.alliance,u.cp,u.username,u.protect,u.regtime,v.name as vname FROM users as u  LEFT JOIN vdata as v ON (v.wref = :V) WHERE u.id = v.owner";
-
-        $p = array('V' => $vid);
-
-        return $this->row($q,$p);
-
-    }
-
-
-
-    function getUserVillInfoByVillageID($vid)
-
-    {
-
-
-
-        $q = "SELECT users.id, users.tribe,village.name,users.username,village.vx,village.vy,village.owner FROM users users LEFT JOIN vdata village ON (village.wref = :V) WHERE users.id = village.owner";
-
-        $p = array('V' => $vid);
-
-        return $this->row($q,$p);
-
-    }
-
-
-
-    function getEvasion($vid)
-
-    {
-
-        $q = "SELECT u.evasion,u.goldclub,v.capital,u.id FROM (
-
-        vdata as v
-
-        LEFT JOIN users as u ON u.id = v.owner)
-
-        WHERE v.wref = :vID";
-
-        $p= array('vID'=> $vid);
-
-        return $this->row($q,$p);
-
-    }
-
-    function getMasterB($vid)
-
-    {
-
-        $q = "SELECT u.gold,u.tribe,u.plus,v.owner FROM (
-
-        vdata as v
-
-        LEFT JOIN users as u ON u.id = v.owner)
-
-        WHERE v.wref = :vID";
-
-        $p= array('vID'=> $vid);
-
-        return $this->row($q,$p);
-
-    }
+ public function getMasterB($vid)
+ {
+     $q = "SELECT u.gold,u.tribe,u.plus,v.owner FROM (
+     vdata as v
+     LEFT JOIN users as u ON u.id = v.owner)
+     WHERE v.wref = :vID";
+     $p= array('vID'=> $vid);
+     return $this->row($q,$p);
+ }
 
     function getUserInfoByVID($vid)
 
@@ -1133,83 +878,53 @@ $this->addTech($vref);
 
 
 
-	function login($username, $password) {
-		$q = $this->queryFetch('SELECT password,username FROM users where `username` = "'.$username.'" OR email = "'.$username.'"');
-		/*echo $q['password']; die();
-		$q = "SELECT password FROM users where `username` = :name";
-		$p=array('name'=>$username);*/
-		$pass=$q['password'];
+    public function login($username, $password) {
+        $q = $this->queryFetch('SELECT password,username FROM users where `username` = "'.$username.'" OR email = "'.$username.'"');
+        /*echo $q['password']; die();
+        $q = "SELECT password FROM users where `username` = :name";
+        $p=array('name'=>$username);*/
+        $pass = isset($q['password']) ? $q['password'] : '';
 
+        if($pass == md5($password.mb_convert_case(isset($q['username']) ? $q['username'] : '',MB_CASE_LOWER,"UTF-8"))) {
+           return true;
+        }else {
+           return false;
+        }
+    }
 
-		if($pass == md5($password.mb_convert_case($q['username'],MB_CASE_LOWER,"UTF-8"))) {
-			return true;
-		}else {
-			return false;
-		}
-	}
-
-
-
-	function checkActivate($act) {
-		$q = "SELECT * FROM activate where act = :act";
+    public function checkActivate($act) {
+        $q = "SELECT * FROM activate where act = :act";
         $p=array('act'=>$act);
+        return $this->row($q,$p);
+    }
 
-       	return $this->row($q,$p);
-	}
+    public function sitterLogin($username, $password) {
+        $q = "SELECT sit1,sit2,id FROM users where username = :userna";
+        $p=array('userna'=>$username);
+        $dbarray=$this->row($q,$p);
 
+        if(isset($dbarray['sit1']) && $dbarray['sit1'] != 0) {
+           $q2 = "SELECT password,username FROM users where id = :si1";
+           $p=array('si1'=>$dbarray['sit1']);
+           $dbarray2=$this->row($q2,$p);
+        }
 
+        if(isset($dbarray['sit2']) && $dbarray['sit2'] != 0) {
+           $q3 = "SELECT password,username FROM users where id = :si2";
+           $p=array('si2'=>$dbarray['sit2']);
+           $dbarray3=$this->row($q3,$p);
+        }
 
-	function sitterLogin($username, $password) {
+        if(isset($dbarray['sit1']) && isset($dbarray['sit2']) && ($dbarray['sit1'] != 0 || $dbarray['sit2'] != 0)) {
+           if(isset($dbarray2['password']) && $dbarray2['password'] == md5($password.mb_convert_case(isset($dbarray2['username']) ? $dbarray2['username'] : '',MB_CASE_LOWER,"UTF-8"))) {
+               return array(true,$dbarray['id'],1,isset($dbarray2['username']) ? $dbarray2['username'] : '');
+           } elseif(isset($dbarray3['password']) && $dbarray3['password'] == md5($password.mb_convert_case(isset($dbarray3['username']) ? $dbarray3['username'] : '',MB_CASE_LOWER,"UTF-8"))) {
+               return array(true,$dbarray['id'],2,isset($dbarray3['username']) ? $dbarray3['username'] : '');
+           }
+        }
 
-
-
-
-
-		$q = "SELECT sit1,sit2,id FROM users where username = :userna";
-
-		$p=array('userna'=>$username);
-
-	    $dbarray=$this->row($q,$p);
-
-		if($dbarray['sit1'] != 0) {
-
-			$q2 = "SELECT password,username FROM users where id = :si1";
-
-		$p=array('si1'=>$dbarray['sit1']);
-
-	    $dbarray2=$this->row($q2,$p);
-
-		}
-
-		if($dbarray['sit2'] != 0) {
-
-			$q3 = "SELECT password,username FROM users where id = :si2";
-
-		$p=array('si2'=>$dbarray['sit2']);
-
-	    $dbarray3=$this->row($q3,$p);
-
-		}
-
-
-
-		if($dbarray['sit1'] != 0 || $dbarray['sit2'] != 0) {
-
-
-
-			if($dbarray2['password'] == md5($password.mb_convert_case($dbarray2['username'],MB_CASE_LOWER,"UTF-8"))) {
-
-				return array(true,$dbarray['id'],1,$dbarray2['username']);
-
-			} elseif($dbarray3['password'] == md5($password.mb_convert_case($dbarray3['username'],MB_CASE_LOWER,"UTF-8"))) {
-
-                return array(true,$dbarray['id'],2,$dbarray3['username']);}
-
-		}
-
-        return array(false,$dbarray['id'],0);
-
-	}
+        return array(false,isset($dbarray['id']) ? $dbarray['id'] : 0,0);
+    }
 
 
 
@@ -1217,273 +932,150 @@ $this->addTech($vref);
 
 
 
-	function setDeleting($uid, $mode) {
+    public function setDeleting($uid, $mode) {
+        $p=array('U'=>$uid);
+        // deleting in 3 days
+        $time = time() + 72 * 3600;
 
-		$p=array('U'=>$uid);
-
-		// deleting in 3 days
-		$time = time() + 72 * 3600;
-
-		if(!$mode) {
-			$q = "UPDATE  users set deleting='".$time."' where id=:U";
-
-		} else {
-
-			$q = "UPDATE  users set deleting='0' where `id` = :U";
-
-		}
-
-
+        if(!$mode) {
+           $q = "UPDATE  users set deleting='".$time."' where id=:U";
+        } else {
+           $q = "UPDATE  users set deleting='0' where `id` = :U";
+        }
 
         $this->query($q, $p);
+        return $this->get_last_id();
+    }
 
-		return $this->get_last_id();
-
-	}
-
-
-
-	function isDeleting($uid) {
-
-		$p=array('U'=>$uid);
-
-		$q = "SELECT deleting FROM users where id = :U";
-
+    public function isDeleting($uid) {
+        $p=array('U'=>$uid);
+        $q = "SELECT deleting FROM users where id = :U";
         return $this->single($q, $p);
+    }
 
-	}
+    public function modifyGold($userid, $amt, $mode) {
+        global $session;
 
+        if(!$mode){
+           if(isset($session->acData) && isset($session->acData['a5']) && $session->acData['a5'] < 6){
+               $this->UpdateAchievU($userid,"`a5`=a5+2");
+           }
+        }
+        $p=array('uID'=> $userid,'A'=>$amt);
 
+        if(!$mode) {
+           $q = "UPDATE users set gold = gold - :A where id = :uID";
+        } else {
+           $q = "UPDATE users set gold = gold + :A where id = :uID";
+        }
 
-	function modifyGold($userid, $amt, $mode) {
-		global $session;
-
-		if(!$mode){
-			if($session->acData['a5'] < 6){
-				$this->UpdateAchievU($userid,"`a5`=a5+2");
-			}
-		}
-		$p=array('uID'=> $userid,
-
-        'A'=>$amt);
-
-		if(!$mode) {
-
-			$q = "UPDATE users set gold = gold - :A where id = :uID";
-
-		} else {
-
-			$q = "UPDATE users set gold = gold + :A where id = :uID";
-
-		}
-
-		$this->query($q, $p);
-
-	}
+        $this->query($q, $p);
+    }
 
 
 
-	/*****************************************
+    /*****************************************
+     Functionretrieve user array via Username or ID
+     Mode 0: Search by Username
+     Mode 1: Search by ID
+     References: Alliance ID
+     *****************************************/
 
-	 Functionretrieve user array via Username or ID
+    public function getUserArray($ref, $mode)
+    {
+        if(!$mode) {
+            $q = "SELECT * FROM users where username = :ref";
+        } else {
+            $q = "SELECT * FROM users where id = :ref";
+        }
+        $p=array('ref'=>$ref);
+        return $this->row($q,$p);
+    }
 
-	Mode 0: Search by Username
-
-	Mode 1: Search by ID
-
-	References: Alliance ID
-
-	*****************************************/
-
-
-
-	function getUserArray($ref, $mode) {
-
-
-
-		if(!$mode) {
-
-			$q = "SELECT * FROM users where username = :ref";
-
-		} else {
-
-			$q = "SELECT * FROM users where id = :ref";
-
-		}
-
-		$p=array('ref'=>$ref);
-
-	    return $this->row($q,$p);
-
-	}
-
-    function getUserSes($name) {
-
+    public function getUserSes($name) {
         $p=array('N'=>$name);
         return $this->row("SELECT id,password,email,access,plus,brewery,tribe,silver,lastupdate,alliance,sit1,sit2,regtime,protect,cp,gold,ok,deleting,b1,b2,b3,b4,goldclub,invited,evasion,quest,deleting,advtime,lang,apall,dpall,msg,vid,stime,ptime,tformat FROM users where `username` =:N",$p);
-
     }
 
-
-
-		function getUserSessidFromOnline($ref,$dude) {
-
-		$p=array('R'=> $ref,
-
-        'D'=> $dude);
-
-			$q = "SELECT sessid FROM online where `name` = :R and `id` = :D";
-
-            return $this->single($q, $p);
-
-	}
-
-
-
-function InsertUniqueIP($ip,$email){
-
-    $p=array('IP'=> $ip,
-
-    'EM'=>$email);
-
-    $this->query("INSERT INTO `antimult` (`id`,`email`,`ip`,`time`) VALUES ('0',:EM,:IP,'".time()."')",$p);
-
-}
-
-    function CheckUniqueIP($ip){
-
-        $p=array('IP'=>$ip);
-
-        $exist=$this->row("SELECT email FROM `antimult` WHERE `ip`=:IP",$p);
-
-        if(!count($exist)){ return false;}
-
-        if(!count($this->query("SELECT id FROM `users` WHERE `email`='".$exist['email']."'"))){return false;}
-
-        return true;
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-	function checkactiveSession($sessid) {
-
-		$p=array('SSID'=>$sessid);
-
-		$q = "SELECT sit FROM online where `sessid` = :SSID";
-
-	    $dbarray=$this->query($q,$p);
-
-		if(count($dbarray)) {
-
-			return true;
-
-		} else {
-
-			return false;
-
-		}
-
-	}
-
-
-
-	function submitProfile($uid, $gender, $location, $birthday, $des1, $des2) {
-
-
-
-		$p=array('uid'=>$uid,'gen'=>$gender,'loca'=>$location,'birth'=>$birthday,'des1'=>$des1,'des2'=>$des2);
-
-		$q = "UPDATE users set gender = :gen, location = :loca, birthday = :birth, desc1 = :des1, desc2 = :des2 where id = :uid";
-
-		$this->query($q,$p);
-
-	}
-
-
-
-
-
-	function GetOnline($uid,$sessid) {
-
-		$p=array('U'=>$uid,
-
-        'SSID'=>$sessid);
-
-		$q = "SELECT sit FROM online where `uid` = :U and `sessid`=:SSID";
-
+    public function getUserSessidFromOnline($ref,$dude) {
+        $p=array('R'=> $ref,'D'=> $dude);
+        $q = "SELECT sessid FROM online where `name` = :R and `id` = :D";
         return $this->single($q, $p);
-
-	}
-
-    function profileoverview($uid) {
-
-        $p=array('U'=>$uid);
-
-        $q = "SELECT location,gender,birthday,desc1,desc2 FROM users where `id` = :U";
-
-        return $this->row($q,$p);
-
     }
 
-		function GetAOnline2($sessid) {
-			
-			$p=array('SSID'=>$sessid);
+    public function InsertUniqueIP($ip,$email){
+        $p=array('IP'=> $ip,'EM'=>$email);
+        $this->query("INSERT INTO `antimult` (`id`,`email`,`ip`,`time`) VALUES ('0',:EM,:IP,'".time()."')",$p);
+    }
 
-			$q = "SELECT sit FROM online where `sessid`=:SSID";
-			return $this->query($q,$p);
+    public function CheckUniqueIP($ip){
+        $p=array('IP'=>$ip);
+        $exist=$this->row("SELECT email FROM `antimult` WHERE `ip`=:IP",$p);
+        if(!isset($exist) || !count($exist)){ return false;}
+        if(!count($this->query("SELECT id FROM `users` WHERE `email`='".$exist['email']."'"))){return false;}
+        return true;
+    }
 
-		}
+    public function checkactiveSession($sessid) {
+        $p=array('SSID'=>$sessid);
+        $q = "SELECT sit FROM online where `sessid` = :SSID";
+        $dbarray=$this->query($q,$p);
+        if(count($dbarray)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-			function GetAOnline3($name) {
 
-		$p=array('N'=>$name);
 
-		$q = "SELECT sit FROM online where `name`=:N'";
+    public function submitProfile($uid, $gender, $location, $birthday, $des1, $des2) {
+        $p=array('uid'=>$uid,'gen'=>$gender,'loca'=>$location,'birth'=>$birthday,'des1'=>$des1,'des2'=>$des2);
+        $q = "UPDATE users set gender = :gen, location = :loca, birthday = :birth, desc1 = :des1, desc2 = :des2 where id = :uid";
+        $this->query($q,$p);
+    }
 
-		return $this->query($q,$p);
+    public function GetOnline($uid,$sessid) {
+        $p=array('U'=>$uid,'SSID'=>$sessid);
+        $q = "SELECT sit FROM online where `uid` = :U and `sessid`=:SSID";
+        return $this->single($q, $p);
+    }
 
-	}
+    public function profileoverview($uid) {
+        $p=array('U'=>$uid);
+        $q = "SELECT location,gender,birthday,desc1,desc2 FROM users where `id` = :U";
+        return $this->row($q,$p);
+    }
 
-				function GetAOnline4($name) {
+    public function GetAOnline2($sessid) {
+        $p=array('SSID'=>$sessid);
+        $q = "SELECT sit FROM online where `sessid`=:SSID";
+        return $this->query($q,$p);
+    }
 
-                    $p=array('N'=>$name);
+    public function GetAOnline3($name) {
+        $p=array('N'=>$name);
+        $q = "SELECT sit FROM online where `name`=:N'";
+        return $this->query($q,$p);
+    }
 
-		$q = "SELECT ip FROM online where `name`=:N'";
+    public function GetAOnline4($name) {
+        $p=array('N'=>$name);
+        $q = "SELECT ip FROM online where `name`=:N'";
+        return $this->query($q,$p);
+    }
 
-                    return $this->query($q,$p);
+    public function Killsession($ses) {
+        $p=array('S'=>$ses);
+        $q = "DELETE FROM online where `sessid`=:S";
+        $this->query($q,$p);
+    }
 
-	}
-
-			function Killsession($ses) {
-
-		$p=array('S'=>$ses);
-
-		$q = "DELETE FROM online where `sessid`=:S";
-
-		$this->query($q,$p);
-
-	}
-
-				function Killsessionip($ip,$name) {
-
-		$p=array('IP'=>$ip,
-
-        'N'=>$name);
-
-		$q = "DELETE FROM online where `ip`=:IP and `name`=:N";
-
-		$this->query($q,$p);
-
-	}
+    public function Killsessionip($ip,$name) {
+        $p=array('IP'=>$ip,'N'=>$name);
+        $q = "DELETE FROM online where `ip`=:IP and `name`=:N";
+        $this->query($q,$p);
+    }
 
 
 
